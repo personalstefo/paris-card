@@ -104,7 +104,9 @@
     box-shadow:0 6px 16px -8px rgba(80,45,15,.5), inset 0 0 0 1px rgba(201,150,47,.28);
     transform:translateY(26%) scale(.94);
     opacity:0;
-    z-index:1;
+    /* Must sit ABOVE .env-front (z-index 3) or the card slides out invisibly
+       behind the envelope and the whole open animation is dead code. */
+    z-index:6;
     transition:transform .95s cubic-bezier(.2,.9,.25,1) .25s, opacity .5s ease .25s;
     display:grid;place-items:center;
     overflow:hidden;
@@ -167,9 +169,21 @@
   @keyframes pulse{0%,100%{opacity:.45}50%{opacity:.95}}
 
   /* ── OPENED STATE ───────────────────────────────────── */
+  /* Open: flap flips back and drops BELOW the letter (z-index 6) so the card
+     isn't hidden behind it while it slides out. */
   .stage.open .flap{transform:rotateX(-176deg);z-index:0;transition:transform .75s cubic-bezier(.4,0,.3,1), z-index 0s linear .3s}
   .stage.open .seal{opacity:0;transform:translate(-50%,10px) scale(.6)}
-  .stage.open .letter{transform:translateY(-58%) scale(1);opacity:1;box-shadow:0 30px 60px -24px rgba(90,50,20,.45), inset 0 0 0 1px rgba(201,150,47,.35)}
+  /* Letter rises out, then hands off: fade it once the card takes over so it
+     doesn't ghost through the card's translucent background. */
+  .stage.open .letter{
+    transform:translateY(-58%) scale(1);
+    opacity:1;
+    z-index:6;
+    box-shadow:0 30px 60px -24px rgba(90,50,20,.45), inset 0 0 0 1px rgba(201,150,47,.35);
+    transition:transform .95s cubic-bezier(.2,.9,.25,1) .25s, opacity .45s ease 1.05s;
+  }
+  /* Handoff: card is fading in by now, so drop the letter out of the way. */
+  .stage.open .letter.gone{opacity:0}
   .stage.open .envelope{cursor:default;filter:drop-shadow(0 30px 44px rgba(120,70,30,.22))}
   .stage.open .hint{opacity:0;animation:none}
 
@@ -387,10 +401,15 @@
   function open() {
     if (opened) return;
     opened = true;
+    var letter = document.querySelector('.letter');
     stage.classList.add('open');
     card.setAttribute('aria-hidden', 'false');
-    setTimeout(function () { card.classList.add('show'); }, reduce ? 0 : 850);
-    setTimeout(burst, reduce ? 0 : 1000);
+    // Sequencing: flap flips (.75s) -> letter rises (.95s, starting .25s so it
+    // lands ~1.2s) -> card fades in -> letter fades out so it can't ghost
+    // through the card's translucent background.
+    setTimeout(function () { card.classList.add('show'); }, reduce ? 0 : 1150);
+    setTimeout(function () { letter.classList.add('gone'); }, reduce ? 0 : 1450);
+    setTimeout(burst, reduce ? 0 : 1250);
   }
 
   function reset() {
@@ -398,6 +417,8 @@
     card.classList.remove('show');
     card.setAttribute('aria-hidden', 'true');
     conf.innerHTML = '';
+    // Clear the handoff class too, or replaying shows an envelope with no letter.
+    document.querySelector('.letter').classList.remove('gone');
     setTimeout(function () { stage.classList.remove('open'); }, 250);
   }
 
