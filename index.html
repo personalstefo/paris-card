@@ -273,6 +273,57 @@
     box-shadow:0 3px 10px -6px rgba(120,70,30,.5);
   }
 
+  /* Suggested button + the image it loads */
+  .suggested{
+    display:inline-flex;align-items:center;gap:7px;
+    margin:22px auto 0;
+    font:inherit;font-size:clamp(11px,3vw,13px);font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;
+    padding:11px 22px;border-radius:999px;cursor:pointer;
+    color:#fff;
+    background:linear-gradient(135deg,#b8336a 0%,#8e1f4c 100%);
+    border:0;
+    box-shadow:0 8px 20px -8px rgba(140,30,80,.65);
+    transition:transform .25s cubic-bezier(.2,.9,.25,1), box-shadow .25s ease;
+    -webkit-appearance:none;appearance:none;
+    -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  .suggested:hover{box-shadow:0 12px 26px -8px rgba(140,30,80,.75)}
+  .suggested:active{transform:scale(.96)}
+  .suggested:focus-visible{outline:3px solid var(--gold);outline-offset:4px}
+
+  /* Full-screen image viewer */
+  .shot{
+    position:fixed;inset:0;z-index:50;
+    display:grid;place-items:center;
+    padding:max(16px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom));
+    background:rgba(30,15,25,.86);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    opacity:0;pointer-events:none;
+    transition:opacity .4s ease;
+  }
+  .shot.show{opacity:1;pointer-events:auto}
+  .shot img{
+    max-width:100%;max-height:88svh;max-height:88vh;
+    width:auto;height:auto;
+    border-radius:16px;
+    box-shadow:0 30px 70px -20px rgba(0,0,0,.7);
+    transform:scale(.94);
+    transition:transform .4s cubic-bezier(.2,.9,.25,1);
+  }
+  .shot.show img{transform:none}
+  .shot-close{
+    position:absolute;top:max(14px,env(safe-area-inset-top));right:14px;
+    width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;
+    background:rgba(255,255,255,.92);color:#8e1f4c;
+    font-size:22px;line-height:1;font-weight:700;
+    display:grid;place-items:center;
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.5);
+    -webkit-appearance:none;appearance:none;
+    -webkit-tap-highlight-color:transparent;
+  }
+
   /* ── CONFETTI ───────────────────────────────────────── */
   .confetti{
     position:fixed;inset:0;z-index:30;pointer-events:none;overflow:hidden;
@@ -319,6 +370,7 @@
     .flap{transition:none}
     .stage.open .flap{transform:rotateX(-176deg)}
     .stage.open .letter{transform:translateY(-58%) scale(1);opacity:1}
+    .stage.open .letter.gone{opacity:0}
     .card-inner{transform:none}
     .confetti{display:none}
   }
@@ -358,7 +410,17 @@
       <span class="badge">Any dates</span>
       <span class="badge">Have the best time ✦</span>
     </div>
+
+    <button class="suggested" id="suggested" type="button">
+      <span>✦</span> Suggested
+    </button>
   </div>
+</div>
+
+<!-- Loads the suggested-dates image on tap -->
+<div class="shot" id="shot" role="dialog" aria-modal="true" aria-label="Suggested dates" aria-hidden="true">
+  <button class="shot-close" id="shotClose" type="button" aria-label="Close">×</button>
+  <img id="shotImg" src="suggested.jpg" alt="Suggested dates" draggable="false">
 </div>
 
 <button class="replay" id="replay" type="button">Close it back</button>
@@ -371,6 +433,9 @@
   var card   = document.getElementById('card');
   var conf   = document.getElementById('confetti');
   var replay = document.getElementById('replay');
+  var suggested  = document.getElementById('suggested');
+  var shot       = document.getElementById('shot');
+  var shotClose  = document.getElementById('shotClose');
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var opened = false;
 
@@ -419,6 +484,8 @@
     conf.innerHTML = '';
     // Clear the handoff class too, or replaying shows an envelope with no letter.
     document.querySelector('.letter').classList.remove('gone');
+    shot.classList.remove('show');
+    shot.setAttribute('aria-hidden', 'true');
     setTimeout(function () { stage.classList.remove('open'); }, 250);
   }
 
@@ -430,6 +497,32 @@
     if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); }
   });
   replay.addEventListener('click', reset);
+
+  // Suggested: tap to load the image full-screen. Stop propagation so the tap
+  // can't fall through to the envelope/card handlers underneath.
+  function showShot(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    shot.classList.add('show');
+    shot.setAttribute('aria-hidden', 'false');
+  }
+  function hideShot(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    shot.classList.remove('show');
+    shot.setAttribute('aria-hidden', 'true');
+  }
+  ['pointerdown', 'touchstart', 'click'].forEach(function (e) {
+    suggested.addEventListener(e, showShot, { passive: false });
+    shotClose.addEventListener(e, hideShot, { passive: false });
+  });
+  // Tap the backdrop (not the image) to dismiss.
+  shot.addEventListener('click', function (ev) {
+    if (ev.target === shot) hideShot(ev);
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && shot.classList.contains('show')) hideShot(ev);
+  });
 })();
 </script>
 </body>
