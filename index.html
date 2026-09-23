@@ -252,11 +252,14 @@
     opacity:.9;
   }
   /* The two venues are long Russian names, so the "&" sits on its own line:
-     smaller than the names, gold, no gradient so it reads as a separator. */
+     smaller than the names, gold, no gradient so it reads as a separator.
+     line-height in px, not a unitless ratio: a unitless value is inherited
+     against the PARENT's font-size (1.12 x 42px = 47px line box), which is what
+     left a big gap above and below the small "&". */
   .amp{
     display:block;
     font-size:.42em;
-    line-height:1;
+    line-height:18px;
     margin:0;
     -webkit-text-fill-color:var(--gold);
     color:var(--gold);
