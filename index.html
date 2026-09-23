@@ -236,8 +236,10 @@
 
   .title{
     margin:0 0 6px;
-    font-size:clamp(30px,9.2vw,52px);
-    line-height:1.05;
+    /* Two long venue names now, each on its own line — cap smaller than the
+       single-name version so "Жёлтая Мельница" doesn't wrap. */
+    font-size:clamp(26px,7.6vw,42px);
+    line-height:1.12;
     font-weight:800;
     letter-spacing:-.015em;
     background:linear-gradient(100deg,#8e1f4c 0%,#c9962f 42%,#b8336a 78%,#5b2a86 100%);
@@ -248,6 +250,17 @@
     width:min(58%,230px);height:2px;margin:16px auto 22px;border-radius:2px;
     background:linear-gradient(90deg,transparent,var(--gold) 20%,#e0578d 50%,var(--gold) 80%,transparent);
     opacity:.9;
+  }
+  /* The two venues are long Russian names, so the "&" sits on its own line:
+     smaller than the names, gold, no gradient so it reads as a separator. */
+  .amp{
+    display:block;
+    font-size:.42em;
+    line-height:1.5;
+    margin:2px 0 4px;
+    -webkit-text-fill-color:var(--gold);
+    color:var(--gold);
+    opacity:.85;
   }
 
   .ru{
@@ -396,18 +409,18 @@
     <span class="spark" style="bottom:12%;left:12%;font-size:12px;animation-delay:1.2s">✦</span>
     <span class="spark" style="bottom:22%;right:11%;font-size:15px;animation-delay:.4s">✦</span>
 
-    <p class="kicker">A little surprise</p>
+    <p class="kicker">С днём рождения! ✦</p>
 
-    <h1 class="title">Disneyland Paris</h1>
+    <h1 class="title">Disneyland Paris<br><span class="amp">&amp;</span><br>Жёлтая Мельница</h1>
     <div class="title-underline"></div>
 
-    <p class="ru">Билеты в париж, на любые даты!</p>
+    <p class="ru">С 22-летием!</p>
 
-    <p class="sub">Where the castle is real and the fireworks are for you. <b>Go whenever you like</b> — the dates are yours to pick.</p>
+    <p class="sub">Twenty-two years of you. <b>Happy birthday</b> — here's to the castle, the fireworks, and the yellow mill.</p>
 
     <div class="badges">
-      <span class="badge">2 tickets</span>
-      <span class="badge">Any dates</span>
+      <span class="badge">22 years</span>
+      <span class="badge">Happy birthday</span>
       <span class="badge">Have the best time ✦</span>
     </div>
 
